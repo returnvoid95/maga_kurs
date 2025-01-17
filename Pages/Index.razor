@@ -1,0 +1,14 @@
+﻿@page "/"
+
+<h3>Index</h3>
+<AuthorizeView>
+        <Authorized>
+            Welcome @context.User.Identity.Name
+        </Authorized>
+        <NotAuthorized>
+            Вы не авторизованы, авторизуйтесб <a href="/login">Log in</a>
+        </NotAuthorized>
+</AuthorizeView>
+@code {
+
+}

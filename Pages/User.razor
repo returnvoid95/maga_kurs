@@ -1,0 +1,109 @@
+﻿
+@page "/User/{id:int}"
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@*@page "/protected"*@
+
+@attribute [Authorize]
+
+<h3>Данные  о пользователе @person.LastName @person.FirstName</h3>
+
+@if (person == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <p>Id: @person.Id</p>
+    <p>Фамилия: @person.LastName</p>
+    <p>Имя: @person.FirstName</p>
+    <p>Отчество: @person.SecondName</p>
+    <p>Пол: @(@person.Sex ? "Мужской" : "Женский")</p>
+    <p>Логин: @person.Email</p>
+   <p>Является ли сотрудником: @(person.IsStaff ? "Да" : "Нет")</p>
+    <p>Подтвержден ли аккаунт: @(person.IsConfrimed ? "Да" : "Нет")</p>
+   <button @onclick="ToggleRoles">@(showRoles ? "Скрыть" : "Показать") Роли пользователя</button>
+    @if (showRoles)
+    {
+        <ul>
+            @foreach (var Role in person.Roles)
+            {
+                <li>@Role.name: </li>
+            }
+        </ul>
+    }
+
+    
+    
+    <!-- Другие свойства -->
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private UserResponceModel person;
+    private bool showRoles = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            var responce = await  Http.GetAsync($"https://localhost:7019/Administration/Get/{Id}");
+            var body  = await responce.Content.ReadAsStringAsync();
+
+            var response = JsonConvert.DeserializeObject<UserMassResponceModel>(body);
+            person = response.data;
+         if (person == null)
+        {
+            // Логика, если person равен null
+            Console.WriteLine("Полученный объект person равен null");
+        }
+    }
+    catch (HttpRequestException e)
+    {
+        Console.WriteLine($"Ошибка при обращении к API: {e.Message}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Произошла ошибка: {ex.Message}");
+    }
+    }
+    private void ToggleRoles() => showRoles = !showRoles;
+    
+     
+       public class iIdName
+    {
+        public int id   { get; set; }
+        public string name  { get; set; }
+
+    }
+    //private string 
+    public class UserResponceModel {
+
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public List<iIdName> Roles { get; set; }
+        public bool IsStaff { get; set; }
+        public bool Sex { get; set; }
+        public bool IsConfrimed { get; set; }
+
+    }
+
+   
+
+     
+public class UserMassResponceModel
+{
+    public UserResponceModel data { get; set; }
+    public string total { get; set; }
+    public string result { get; set; }
+    public string error { get; set; }
+    public string message { get; set; }
+}
+
+    }
+}

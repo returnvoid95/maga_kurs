@@ -1,0 +1,212 @@
+﻿@page "/linechart"
+@using ChartJs.Blazor
+@using ChartJs.Blazor.LineChart
+@using Newtonsoft.Json
+@using System.Text
+@inject HttpClient Http
+
+<h3>Линейный график</h3>
+
+<div>
+    <label>Укажите год:</label>
+    <input type="text" @bind="_Year" />
+    
+
+
+    <button @onclick="UpdateChart">Обновить график</button>
+</div>
+
+<Chart Config="_config"></Chart>
+
+@code {
+
+    private LineConfig _config;
+    private string _Year;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ConfigureLineConfig();
+    }
+
+    private async Task UpdateChart()
+    {
+         ClearChart();
+        await ReconfigLineConfig(_config);
+    StateHasChanged();
+}
+
+
+
+    public async Task ConfigureLineConfig()
+    {
+        _config = new LineConfig
+        {
+            Options = new LineOptions
+            {
+
+                Responsive = true,
+                Title = new OptionsTitle
+                {
+                    Display = true,
+                    Text = "Линейный график событий  в регионах"
+                }
+            }
+        };
+
+
+        int Year = Convert.ToInt32(_Year);
+        //GetWorksAuthorsChart?startDate={_startDate}&endDate={_endDate}
+        var response = await Http.GetAsync($"https://localhost:7019/Charts/GetEventsRegionByDateChart/{Year}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            var responseModel = JsonConvert.DeserializeObject<WorksAuthorsResponseModel>(body);
+            var data = responseModel.Data;
+
+
+
+            var datasets = new List<LineDataset<int>>();
+            foreach(var row in data)
+            {
+                datasets.Add(new LineDataset<int> (row.AuthorWorks.Select(e=> e.Value).ToList())
+                    {
+                        Label = row.RegionName,
+                        BackgroundColor = GenerateColor(),
+                        BorderColor =  GenerateColor(),
+                        BorderWidth = 1,
+                        Fill = true
+
+                    });
+            }
+
+
+
+            //var chartData = new LineData
+            //{
+            var Labels = new List<string> { "Январь", "Февраль", "Март", "Апрель", "Май" ,"Июнь", "Июль", "Август", "Сентябрь", "Октябрь","Ноябрь", "Декабрь"};
+            //    Datasets = datasets
+            //};
+
+
+            if (data == null)
+            {
+                throw new Exception("Ошибка получения данных");
+            }
+
+            foreach (var key in Labels)
+            {
+                _config.Data.Labels.Add(key);
+            }
+           
+
+            foreach (var dataset in datasets)
+            {
+
+                _config.Data.Datasets.Add(dataset);
+            }
+        }
+        else
+        {
+            throw new Exception("Ошибка получения данных");
+        }
+    }
+    public async Task ReconfigLineConfig(LineConfig _config)
+    {
+        
+
+        int Year = Convert.ToInt32(_Year);
+        //GetWorksAuthorsChart?startDate={_startDate}&endDate={_endDate}
+        var response = await Http.GetAsync($"https://localhost:7019/Charts/GetEventsRegionByDateChart/{Year}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            var responseModel = JsonConvert.DeserializeObject<WorksAuthorsResponseModel>(body);
+            var data = responseModel.Data;
+
+
+
+            var datasets = new List<LineDataset<int>>();
+            foreach(var row in data)
+            {
+                datasets.Add(new LineDataset<int> (row.AuthorWorks.Select(e=> e.Value).ToList())
+                    {
+                        Label = row.RegionName,
+                        BackgroundColor = GenerateColor(),
+                        BorderColor =  GenerateColor(),
+                        BorderWidth = 1,
+                        Fill = true
+
+                    });
+            }
+
+
+
+            //var chartData = new LineData
+            //{
+            var Labels = new List<string> { "Январь", "Февраль", "Март", "Апрель", "Май" ,"Июнь", "Июль", "Август", "Сентябрь", "Октябрь","Ноябрь", "Декабрь"};
+            //    Datasets = datasets
+            //};
+
+
+            if (data == null)
+            {
+                throw new Exception("Ошибка получения данных");
+            }
+
+            foreach (var key in Labels)
+            {
+                _config.Data.Labels.Add(key);
+            }
+           
+
+            foreach (var dataset in datasets)
+            {
+
+                _config.Data.Datasets.Add(dataset);
+            }
+        }
+        else
+        {
+            throw new Exception("Ошибка получения данных");
+        }
+    }
+      private void ClearChart()
+    {
+        // Очищаем данные графика
+        _config.Data.Datasets.Clear();
+        _config.Data.Labels.Clear();
+        
+        
+    }
+     private string GenerateColor()
+    {
+        
+        Random rand = new Random();
+        
+            // Генерируем случайный цвет в формате HEX
+            string color = $"#{rand.Next(0x1000000):X6}";
+        
+        return color;
+    }
+    public class WorksAuthorsResponseModel
+    {
+        public List<DataModel> Data { get; set; }
+        public string Total { get; set; }
+        public string Result { get; set; }
+        public string Error { get; set; }
+        public string Message { get; set; }
+    }
+
+    public class DataModel
+    {   public string RegionName { get; set; }
+        public Dictionary<string, int> AuthorWorks { get; set; }
+    }
+    public class PostModel
+    {
+        public DateTime startdate { get; set; }
+        public DateTime enddate { get; set; }
+    }
+}

@@ -1,0 +1,13 @@
+﻿@page "/LogOf"
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider Provider
+
+@code {
+    protected override void OnInitialized()
+    {
+        ((TokenAuthentificationStateProvider)Provider).MakeUserAnonymous();
+        NavigationManager.NavigateTo("/");
+
+    }
+
+}

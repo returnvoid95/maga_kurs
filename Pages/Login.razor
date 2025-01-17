@@ -1,0 +1,23 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using MAgistrFront.Infrastructure
+@inject HttpClient Http
+
+@inherits LoginViewModel
+
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Username:</label>
+        <InputText @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind-Value="loginModel.Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm>
+

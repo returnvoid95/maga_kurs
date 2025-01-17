@@ -1,0 +1,156 @@
+﻿@*@page "/yandex-mapAdd"
+@using Microsoft.JSInterop
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+<form @onsubmit="AddMapObject">
+    <input type="text" @bind="newMapObject.Name" placeholder="Название" required />
+    <input type="text" @bind="newMapObject.Url" placeholder="URL" required />
+    <input type="text" @bind="newMapObject.Coordinates" placeholder="Координаты (например, 55.76,37.64)" required />
+    <input type="file" @onchange="OnFileChange()" />
+    <button @onclick="UploadIcon">Загрузить иконку</button>
+    <button type="submit">Добавить объект</button>
+</form>
+
+
+@code {
+
+    private IFormFile _iconFile;
+    private List<MapObjectDto> MapObjects = new List<MapObjectDto>
+    {
+        new MapObjectDto { Name = "Падение трои", Coordinates = new double[] { 55.76, 37.64 } ,Url  = "https://localhost:7150/HysEvent/9" },
+        new MapObjectDto { Name = "смерть помпея", Coordinates = new double[] { 55.77, 37.65 } ,Url = "https://localhost:7150/HysEvent/3" },
+        // Добавьте другие объекты по мере необходимости
+    };
+    private MapObjectDto newMapObject = new MapObjectDto();
+    private IBrowserFile selectedFile;
+
+    protected async override void OnAfterRender(bool firstRender)
+{
+    if (firstRender)
+    {
+        var script = @"
+            window.initYandexMap = function(objects) {
+                var map = new ymaps.Map('map', {
+                    center: [55.76, 37.64],
+                    zoom: 10
+                });
+
+                // Добавление объектов на карту
+                objects.forEach(function(obj) {
+                    var placemark = new ymaps.Placemark(obj.Coordinates, {
+                        balloonContent: obj.Name
+                    });
+
+                    // Обработчик события клика по метке
+                    placemark.events.add('click', function() {
+                        window.location.href = obj.Url; // Переход на страницу объекта
+                    });
+
+                    map.geoObjects.add(placemark);
+                });
+            };
+
+            ymaps.ready(function() {
+                window.initYandexMap(window.mapObjects);
+            });
+        ";
+
+        // Serialize the MapObjects and make it globally accessible
+        var objectsJson = System.Text.Json.JsonSerializer.Serialize(MapObjects);
+        await JSRuntime.InvokeVoidAsync("eval", $"window.mapObjects = {objectsJson};");
+        
+        // Register the init function
+        await JSRuntime.InvokeVoidAsync("eval", script);
+    }
+}
+    private async Task AddMapObject()
+    {
+        var content = new MultipartFormDataContent();
+
+        content.Add(new StringContent(newMapObject.Name), "Name");
+        content.Add(new StringContent(JsonConvert.SerializeObject(newMapObject.Coordinates)), "Coordinates");
+        content.Add(new StringContent(newMapObject.Url), "Url");
+
+        if (selectedFile != null)
+        {
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(maxFileSize: 1024 * 1024));
+            content.Add(fileContent, "IconFile", selectedFile.Name);
+        }
+
+        var response = await Http.PostAsync("api/Map/add", content);
+        if (response.IsSuccessStatusCode)
+        {
+            // Обновите карту, добавив новый объект
+        }
+    }
+    private async Task<List<MapIcon>> GetHistoryEventsForMap()
+{
+    var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+    if (response.IsSuccessStatusCode)
+    {
+        var json = await response.Content.ReadAsStringAsync();
+        var responseModel = JsonConvert.DeserializeObject<MapResponceModel>(json);
+        return responseModel.data; 
+    }
+    return new List<MapIcon>();
+}
+
+ 
+    
+
+private async Task OnFileChange(InputFileChangeEventArgs e)
+{
+    _iconFile = e.File;
+}
+
+private async Task UploadIcon()
+{
+    if (_iconFile != null)
+    {
+        var content = new MultipartFormDataContent();
+        var stream = _iconFile.OpenReadStream();
+        var fileContent = new StreamContent(stream);
+        content.Add(fileContent, "file", _iconFile.Name);
+
+        var response = await Http.PostAsync("https://localhost:7019/api/upload-icon", content);
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<UploadIconResponse>(json);
+            // Используйте result.Url для привязки иконки к объекту
+        }
+    }
+}public class MapIcon
+{
+    public string Name { get; set; }
+    public double[] Coordinates { get; set; }
+    public string Url { get; set; }
+    public string IconUrl { get; set; } // URL иконки
+}
+
+public class UploadIconResponse
+{
+    public string Url { get; set; }
+}
+    public class MapObjectDto
+{
+    public string Name { get; set; }
+    public double[] Coordinates { get; set; }
+    public string Url { get; set; }
+    public IFormFile IconFile { get; set; }
+}
+
+
+      public class MapResponceModel
+    {
+        public List<MapIcon> data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+}*@

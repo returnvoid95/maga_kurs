@@ -1,0 +1,133 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = MAgistrFront
+build_property.RootNamespace = MAgistrFront
+build_property.ProjectDir = C:\Users\user\Work\Other\maga_kurs\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\user\Work\Other\maga_kurs
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 6.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/user/Work/Other/maga_kurs/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Components/RedirectToLoginComponent.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdFRvTG9naW5Db21wb25lbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/AddEvent.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkRXZlbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/AddPerson.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkUGVyc29uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/AddUser.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkVXNlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Admin.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Charts.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2hhcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/EditEvent.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdEV2ZW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/EditPerson.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdFBlcnNvbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/EditUser.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdFVzZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/HistoryEvents.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGlzdG9yeUV2ZW50cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/HistoryPersons.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGlzdG9yeVBlcnNvbnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/HistoryPersonsEventChart.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGlzdG9yeVBlcnNvbnNFdmVudENoYXJ0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/HysEvent.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSHlzRXZlbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/HysPerson.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSHlzUGVyc29uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Linechart.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTGluZWNoYXJ0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/LogOf.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9nT2YucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/Map.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/MapAddEvent.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWFwQWRkRXZlbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/PersonsEvetnByTimePeriodReport.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVyc29uc0V2ZXRuQnlUaW1lUGVyaW9kUmVwb3J0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Pages/User.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXNlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Shared/SurveyPrompt.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/user/Work/Other/maga_kurs/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-ras5mekjhp
+
+[C:/Users/user/Work/Other/maga_kurs/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-28n467w53s

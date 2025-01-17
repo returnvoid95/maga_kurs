@@ -1,0 +1,103 @@
+﻿@page "/ChartWorksByUser"
+@inject HttpClient Http
+@using ChartJs.Blazor.PieChart
+@using Newtonsoft.Json
+<h3>График</h3>
+
+<Chart Config="_config"></Chart>
+
+@code {
+    private PieConfig _config;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ConfigurePieConfig();
+    }
+
+
+    public async Task ConfigurePieConfig()
+    {
+        _config = new PieConfig();
+
+        _config.Options = new PieOptions
+            {
+                Responsive = true,
+                Title = new OptionsTitle
+                {
+                    Display = true,
+                    Text = "График соотношения работ и авторов"
+                }
+            };
+
+
+
+
+        var responce = await  Http.GetAsync("https://localhost:7019/Charts/GetWorksAuthorsChart");
+        if (responce.IsSuccessStatusCode)
+        {
+
+
+            var body = responce.Content.ReadAsStringAsync();
+
+            var response = JsonConvert.DeserializeObject<WorksAuthorsResponseModel>(await body);
+            var data = response.Data.AuthorWorks;
+            if(data == null)
+            {
+                throw new Exception("Ошибка неn тданных");
+            }
+
+
+
+            foreach (var row in data)
+            {
+                _config.Data.Labels.Add(row.Key);
+            }
+            
+            
+            var colors = GenerateColors(data.Count());
+            var dataset = new PieDataset<int>(data.Select(e=> e.Value).ToArray())
+                {
+                    BackgroundColor = colors.ToArray()
+                  
+        
+
+                };
+            _config.Data.Datasets.Add(dataset);
+
+        }
+        else throw new Exception("Ошибка неn тданных");
+    }
+
+    
+  private List<string> GenerateColors(int count)
+    {
+        var colors = new List<string>();
+        Random rand = new Random();
+        
+        for (int i = 0; i < count; i++)
+        {
+            // Генерируем случайный цвет в формате HEX
+            string color = $"#{rand.Next(0x1000000):X6}";
+            colors.Add(color);
+        }
+
+        return colors;
+    }
+
+   
+    public class WorksAuthorsResponseModel
+{
+    public DataModel Data { get; set; }
+    public string Total { get; set; }
+    public string Result { get; set; }
+    public string Error { get; set; }
+    public string Message { get; set; }
+}
+
+public class DataModel
+{
+    public Dictionary<string,int> AuthorWorks { get; set; }
+}
+
+    
+}

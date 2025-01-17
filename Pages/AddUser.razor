@@ -1,0 +1,178 @@
+﻿@page "/AddUser"
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Добавить пользователя</h3>
+
+<EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Имя:</label>
+        <InputText @bind-Value="newUser.FirstName" />
+    </div>
+    <div>
+        <label>Фамилия:</label>
+        <InputText @bind-Value="newUser.LastName" />
+    </div>
+    <div>
+        <label>Отчество:</label>
+        <InputText @bind-Value="newUser.SecondName" />
+    </div>
+    <div>
+        <label>Логин:</label>
+        <InputText @bind-Value="newUser.Email" />
+    </div>
+    <div>
+        <label>Пол:</label>
+        <InputSelect @bind-Value="newUser.Sex">
+            <option value="true">Мужской</option>
+            <option value="false">Женский</option>
+        </InputSelect>
+    </div>
+    
+    <div>
+        <label>Роли:</label>
+        @foreach (var role in roles)
+        {
+            <div>
+                <InputCheckbox @bind-Value="role.IsSelected" />
+                <label>@role.name</label>
+            </div>
+        }
+    </div>
+    
+    <div>
+        <button type="submit">Добавить пользователя</button>
+    </div>
+</EditForm>
+
+@if (message != null)
+{
+    <p>@message</p>
+}
+
+@code {
+    private UserRequestModel newUser = new UserRequestModel();
+    private string message;
+    private List<iIdName> roles = new List<iIdName>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoles();
+    }
+
+    private async Task LoadRoles()
+    {
+        try
+        {
+            var response = await Http.GetAsync("https://localhost:7019/Spr/GetRoles");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                var responce = JsonConvert.DeserializeObject<GetRolesResult>(body);
+                roles = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value, IsSelected = false }).ToList();
+            }
+            else
+            {
+                message = "Ошибка при загрузке ролей.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            // Добавляем выбранные роли к модели пользователя
+            newUser.RoleIds = roles
+                .Where(r => r.IsSelected)
+                .Select(r =>   r.id)
+                .ToList();
+
+            if (!roles.Contains( new iIdName {id = 5,name="Пользователь" ,IsSelected=true}))
+            {
+                newUser.IsStaff = true;   
+
+            }
+            else
+            {
+                newUser.IsStaff = false;
+            }
+            var json = JsonConvert.SerializeObject(newUser);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await Http.PostAsync("https://localhost:7019/Administration/create", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Пользователь успешно добавлен!";
+                NavigationManager.NavigateTo("/Admin");
+            }
+            else
+            {
+                message = "Ошибка при добавлении пользователя.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+
+    public class UserResponceModel {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public List<iIdName> Roles { get; set; } 
+        public bool Sex { get; set; }
+        public bool IsConfrimed { get; set; }
+    }
+
+    public class UserMassResponceModel
+    {
+        public UserResponceModel data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+
+    public class GetRolesResult
+    {
+        public Dictionary<int,string> data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+    public class iIdName
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    public class UserRequestModel
+    {
+        public int ? Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+
+        public string Email { get; set; }
+        public string? Password { get; set; }
+        public List<int>RoleIds { get; set; }
+        public bool IsStaff { get; set; }
+        public bool Sex { get; set; }
+
+    }
+}

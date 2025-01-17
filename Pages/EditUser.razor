@@ -1,0 +1,204 @@
+﻿@page "/EditUser/{id:int}"
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Редактировать пользователя</h3>
+
+<EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Имя:</label>
+        <InputText @bind-Value="user.FirstName" />
+    </div>
+    <div>
+        <label>Фамилия:</label>
+        <InputText @bind-Value="user.LastName" />
+    </div>
+    <div>
+        <label>Отчество:</label>
+        <InputText @bind-Value="user.SecondName" />
+    </div>
+    
+    <div>
+        <label>Пол:</label>
+        <InputSelect @bind-Value="user.Sex">
+            <option value="true">Мужской</option>
+            <option value="false">Женский</option>
+        </InputSelect>
+    </div>
+   
+      <div>
+        <label>Подтверждена ли учетная запись:</label>
+        <InputCheckbox @bind-Value="user.IsConfrimed" />
+    </div>
+    <div>
+        <label>Роли:</label>
+        @foreach (var role in roles)
+        {
+            <div>
+                <InputCheckbox @bind-Value="@role.IsSelected" />
+                <span>@role.name</span>
+            </div>
+        }
+    </div>
+    <div>
+        <button type="submit">Сохранить изменения</button>
+    </div>
+</EditForm>
+
+@if (message != null)
+{
+    <p>@message</p>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private UserResponceModel user;
+    private string message;
+    private List<iIdName> roles = new List<iIdName>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUser();
+        await LoadRoles();
+    }
+
+    private async Task LoadUser()
+    {
+        try
+        {
+            var response = await Http.GetAsync($"https://localhost:7019/Administration/Get/{id}");
+            var body = await response.Content.ReadAsStringAsync();
+            var responseData = JsonConvert.DeserializeObject<UserMassResponceModel>(body);
+            user = responseData.data;
+
+            if (user == null)
+            {
+                message = "Пользователь не найден.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task LoadRoles()
+    {
+        try
+        {
+            var response = await Http.GetAsync("https://localhost:7019/Spr/GetRoles");
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                var responce = JsonConvert.DeserializeObject<GetRolesResult>(body);
+                roles = responce.data
+                    .Select(e => new iIdName { id = e.Key, name = e.Value, IsSelected = user.Roles.Any(r => r.id == e.Key) })
+                    .ToList();
+            }
+            else
+            {
+                message = "Ошибка при загрузке ролей.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+
+            var body = new UserRequestModel
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    SecondName = user.SecondName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    RoleIds = roles.Where(r => r.IsSelected).Select(r => r.id).ToList(),
+                    Sex = user.Sex,
+                    //IsStaff= user.IsStaff,
+                    IsConfrimed = user.IsConfrimed,
+
+                };
+            // Обновляем роли пользователя
+            //user.RoleIds = roles.Where(r => r.IsSelected).Select(r => r.id).ToList();
+
+            var json = JsonConvert.SerializeObject(body);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var response = await Http.PostAsync($"https://localhost:7019/Administration/Update", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Пользователь успешно обновлён!";
+                NavigationManager.NavigateTo("/Admin"); // Перенаправление на список пользователей или другую страницу
+            }
+            else
+            {
+                message = "Ошибка при обновлении пользователя.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Произошла ошибка: {ex.Message}";
+        }
+    }
+
+    public class iIdName
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public bool IsSelected { get; set; } 
+    }
+    
+    public class UserResponceModel 
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public List<iIdName> Roles { get; set; }
+        public bool IsStaff { get; set; }
+        public bool Sex { get; set; }
+        public bool IsConfrimed { get; set; }
+    }
+
+    private class UserRequestModel
+    {
+        public int? Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string? Password { get; set; }
+        public List<int> RoleIds { get; set; } 
+        public bool IsStaff { get; set; }
+        public bool Sex { get; set; }
+        public bool IsConfrimed { get; set; }
+    }
+    
+    public class UserMassResponceModel
+    {
+        public UserResponceModel data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+      public class GetRolesResult
+    {
+        public Dictionary<int,string> data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+}

@@ -1,0 +1,150 @@
+﻿ 
+Копировать
+@page "/yandex-map"
+@using Microsoft.JSInterop
+@using Newtonsoft.Json
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<div>
+    <select @onchange="OnPeriodSelected">
+        <option value="">Выберите исторический период</option>
+        @foreach (var period in HistoricalPeriods)
+        {
+            <option value="@period.id">@period.name</option>
+        }
+    </select>
+</div>
+
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+@code {
+    private List<MapObject> MapObjects = new List<MapObject>();
+    private List<IdName> HistoricalPeriods = new List<IdName>();
+    private List<MapObject> FilteredMapObjects = new List<MapObject>();
+    private int selectedPeriodId = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        HistoricalPeriods = await GetHistoricalPeriods();
+        MapObjects = await GetHistoryEventsForMap();
+        FilteredMapObjects = new List<MapObject>(MapObjects); // Изначально показываем все объекты
+    }
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        FilteredMapObjects = await GetHistoryEventsForMap();
+        if (firstRender)
+        {
+            await InitializeMap();
+        }
+    }
+
+    private async Task InitializeMap()
+    {
+        var script = @"
+            window.initYandexMap = function(objects) {
+                var map = new ymaps.Map('map', {
+                    center: [55.76, 37.64],
+                    zoom: 10
+                });
+
+                objects.forEach(function(obj) {
+                    var placemark = new ymaps.Placemark(obj.Coordinates, {
+                        balloonContent: obj.Name
+                    });
+
+                    placemark.events.add('mouseenter', function() {
+                        placemark.properties.set('iconContent', obj.Name); // Показать название при наведении
+                    });
+
+                    placemark.events.add('mouseleave', function() {
+                        placemark.properties.set('iconContent', ''); // Убрать название
+                    });
+
+                    placemark.events.add('click', function() {
+                        window.location.href = obj.Url; // Переход на страницу объекта
+                    });
+
+                    map.geoObjects.add(placemark);
+                    console.log('Adding placemark for:', obj);
+                });
+            };
+
+            ymaps.ready(function() {
+                window.initYandexMap(window.filteredMapObjects);
+            });
+        ";
+
+        // Serialize the FilteredMapObjects and make it globally accessible
+        var objectsJson = System.Text.Json.JsonSerializer.Serialize(FilteredMapObjects);
+        await JSRuntime.InvokeVoidAsync("eval", $"window.filteredMapObjects = {objectsJson};");
+
+        // Register the init function
+        await JSRuntime.InvokeVoidAsync("eval", script);
+    }
+
+    private async Task<List<MapObject>> GetHistoryEventsForMap()
+    {
+        int Id = selectedPeriodId;
+        var response = await Http.GetAsync($"https://localhost:7019/Event/GetEventsToMap/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<MapResponceModel>(json);
+            return responce.data; 
+        }
+        return new List<MapObject>();
+    }
+
+    private async Task<List<IdName>> GetHistoricalPeriods()
+    {
+        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
+            return responce.data.Select(e => new IdName { id = e.Key, name = e.Value }).ToList();;
+        }
+        return new List<IdName>();
+    }
+
+   private async Task OnPeriodSelected(ChangeEventArgs e)
+{
+   
+    if (int.TryParse(e.Value?.ToString(), out selectedPeriodId))
+    {
+        FilteredMapObjects = MapObjects.Where(obj => obj.PeriodId == selectedPeriodId).ToList(); // Фильтрация объектов
+        await InitializeMap(); 
+    }
+    else
+    {
+        // 
+        selectedPeriodId = 0; 
+        FilteredMapObjects = new List<MapObject>(MapObjects); 
+        await InitializeMap(); 
+    }
+}
+
+    public class MapObject
+    {
+        public string Name { get; set; }
+        public double[] Coordinates { get; set; }
+        public string Url { get; set; }
+        public int PeriodId { get; set; } 
+    }
+
+    public class IdName
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+    }
+
+    public class MapResponceModel
+    {
+        public List<MapObject> data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
+}

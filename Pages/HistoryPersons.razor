@@ -1,0 +1,328 @@
+﻿@page "/HistoryPersons"
+@using Microsoft.AspNetCore.Authorization
+@using Newtonsoft.Json
+@using System.Text
+@using System.Reflection
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@*@page "/protected"
+@attribute [Authorize]*@
+
+
+
+<PageTitle>HistoryPersons</PageTitle>
+
+<h1>Исторические личности</h1>
+
+<p>.</p>
+
+
+
+
+    <div>
+    <label for="searchText">Поиск:</label>
+    <input type="text" id="searchText" @bind="RequestModel.Filter.TextSearch" placeholder="Введите текст для поиска" />
+    
+        
+    
+    <label for="timePeriod">Исторический период:</label>
+    <select id="timePeriod" @bind="RequestModel.Filter.TimePeriodId">
+
+
+        <option value="">Выберите период</option>
+        @foreach (var period in TimePeriods)
+        {
+            <option value="@period.id">@period.name</option>
+        }
+    </select>
+
+   
+
+    
+    <button class="btn btn-primary" @onclick="SearchEvents">Поиск</button>
+    <button class="btn btn-secondary" @onclick="ResetFilters">Сбросить фильтры</button>
+    
+    
+</div>
+    <table class="table">
+        <thead>
+            <tr>
+
+                
+                <th @onclick="() => SortColumn(1)">Id</th>
+                <th @onclick="() => SortColumn(2)">Имя</th>
+                <th @onclick="() => SortColumn(3)">Описание</th>
+                <th @onclick="() => SortColumn(4)">Дата рождения</th>
+                <th @onclick="() => SortColumn(5)">Дата смерти</th>
+                <th @onclick="() => SortColumn(6)">Исторический период</th>
+                <th @onclick="() => SortColumn(7)">Автор статьи</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var person in  HystoryPersons)
+            {
+                <tr @onclick="() => SelectPerson((int)person.Id)" @ondblclick="() => OpenPersonPage((int)person.Id)" class="@(IsPersonSelected((int)person.Id) ? "table-primary" : "")">
+                    <td>@person.Id</td>
+                    <td>@person.Name</td>
+                    <td>@person.Description</td>
+                    <td>@person.DateOfBirth</td>
+                    <td>@person.DateOfDeath</td>
+                    <td>@person.TimePeriodName</td>
+                    <td>@person.Author.LastName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <style>
+        .table-primary {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+    <div class="button-group">
+        <button class="btn btn-primary" @onclick="AddEvent">Добавить историческую личность</button>
+        <button class="btn btn-secondary" @onclick="EditEvent">Редактировать историческую личность</button>
+        <button class="btn btn-danger" @onclick="DeleteEvent">Удалить историческую личность</button>
+    </div>
+
+
+@code {
+
+    
+    private List<iIdName> TimePeriods = new List<iIdName>();
+
+    
+    private int InListPosition = 0;
+    private int RequestRowCount = 20;
+    public int selectedPersonId = 0;
+    private PersonsPortionRequest RequestModel = new PersonsPortionRequest();
+    
+    private List<PersonResponceModel> HystoryPersons;
+    
+    private async Task LoadFilterData()
+    {
+        
+        var timePeriodResponse = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        if (timePeriodResponse.IsSuccessStatusCode)
+        {
+            var body = await timePeriodResponse.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(body);
+             
+            TimePeriods = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+        }
+                
+    }
+     protected override async Task OnInitializedAsync()
+    {
+        await LoadFilterData();
+
+      RequestModel = new PersonsPortionRequest {
+                RequestRowCount = RequestRowCount,
+                InListPosition = InListPosition,
+                OrderBy = "Id",
+                OrderTo = true,
+                Filter = new PersonsFilter(),
+                 };
+
+        await LoadPersons();
+    }
+    private void OpenPersonPage(int id)
+    {
+        NavigationManager.NavigateTo($"/Hysperson/{id}");
+    }
+
+  
+
+        public async Task LoadPersons()
+    {
+         
+       
+        var model = JsonConvert.SerializeObject(RequestModel);
+
+
+        var data = new StringContent(model, Encoding.UTF8, "application/json");
+        var responce = await  Http.PostAsync("https://localhost:7019/HistoryPersons/GetPersonsPortion",data);
+        if (responce.IsSuccessStatusCode)
+        {
+
+
+            var body = responce.Content.ReadAsStringAsync();
+
+            var response = JsonConvert.DeserializeObject<PersonMassResponceModel>(await body);
+            HystoryPersons = response.data.Data; ; 
+
+
+            int RowsCount = response.data.RowsCount;
+
+
+        }
+
+        else
+        {
+
+        }
+    }
+
+     private async Task SearchEvents()
+    {
+        await LoadPersons();
+    }
+
+    private async Task ResetFilters()
+    {
+        RequestModel.Filter = new PersonsFilter();
+        await LoadPersons();
+    }
+
+    
+    private async Task AddEvent()
+    {
+        NavigationManager.NavigateTo("/AddPerson"); 
+    }
+
+    private async Task EditEvent()
+    {
+        if (selectedPersonId != 0)
+        {
+            NavigationManager.NavigateTo($"/EditPerson/{selectedPersonId}"); 
+        }
+    }
+
+    private async Task DeleteEvent()
+    {
+        if (selectedPersonId != 0)
+        {
+            var response = await Http.GetAsync($"https://localhost:7019/HistoryPersons/Delete/{selectedPersonId}");
+            if (response.IsSuccessStatusCode)
+            {
+                // Обновите список пользователей после удаления
+                await LoadPersons();
+            }
+        }
+    }
+        private async Task SortColumn(int columnId)
+    {
+        string columnName = "";
+        switch (columnId)
+        {
+                case 1:columnName = "Id";
+                break;
+                case 2:columnName = "Name";
+                break;
+                case 3:columnName = "Description";
+                break;
+                case 4:columnName = "BirthDay";
+                break;
+                case 5:columnName = "DeathDay";
+                break;
+                case 6:columnName = "Period";
+                break;
+                case 7:columnName = "Author";
+                break;
+               
+               
+        }
+
+        
+        if (RequestModel.OrderBy == columnName)
+        {
+            RequestModel.OrderTo = !RequestModel.OrderTo; 
+        }
+        else
+        {
+            RequestModel.OrderBy = columnName; // Изменяем столбец сортировки
+            RequestModel.OrderTo = true; // Сбрасываем направление на восходящее
+        }
+
+        await LoadPersons();
+    }
+     private void SelectPerson(int EventId)
+    {
+        selectedPersonId = EventId;
+        
+    }
+
+       private bool IsPersonSelected(int PersonId)
+    {
+        return selectedPersonId  == PersonId;
+    }
+
+
+    public class PersonResponceModel
+    {
+        public int? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? DateOfDeath { get; set; }
+          public int TimePeriodId { get; set; }
+        public string TimePeriodName { get; set; }
+
+        public DateTime EditOn { get; set; }
+        public ShortUserData Author { get; set; }
+        public List<string> Ilustrations { get; set; }
+
+
+
+    }
+
+    public class DataModel
+    {
+        public List<PersonResponceModel> Data { get; set; }
+        public int RowsCount { get; set; }
+
+    }
+
+     
+public class PersonMassResponceModel
+{
+    public DataModel data { get; set; }
+    public string total { get; set; }
+    public string result { get; set; }
+    public string error { get; set; }
+    public string message { get; set; }
+}
+
+    public class iIdName
+    {
+        public int id   { get; set; }
+        public string name  { get; set; }
+
+    }
+
+     public class ShortUserData
+    { 
+    public int Id { get; set; } 
+    public string FirstName { get; set; }
+    public string SecondName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
+
+    }
+     public class PersonsPortionRequest
+    {
+        public int InListPosition { get; set; }
+        public int RequestRowCount { get; set; }
+        public PersonsFilter Filter { get; set; }
+        public string OrderBy { get; set; }
+        public bool OrderTo { get; set; }
+
+    }
+    public class PersonsFilter
+    {
+
+        public string? TextSearch { get; set; }
+        public int? Id { get; set; }
+        public string? Author { get; set; }
+        public string? Name { get; set; }
+        //public int? LevelId { get; set; }
+        public DateTime? EditOnStart { get; set; }
+        public DateTime? EditOnEnd { get; set; }
+       // public int? TypeId { get; set; }
+        public string? Region { get; set; }
+        public int? TimePeriodId { get; set; }
+        public DateTime? StartPeriod { get; set; }
+        public DateTime? EndPeriod { get; set; }
+
+    }
+}

@@ -1,0 +1,88 @@
+﻿@using Newtonsoft.Json
+@page "/report1"
+@inject HttpClient Http
+
+<h3>Отчет по объекту</h3>
+
+<EditForm Model="this">
+    <label>Выберите исторический период:</label>
+    <InputSelect @bind-Value="selectedPeriodId" @onchange="OnPeriodChanged">
+        <option value="">Выберите исторический период</option>
+        @foreach (var period in periods)
+        {
+            <option value="@period.id">@period.name</option>
+        }
+    </InputSelect>
+</EditForm>
+
+@if (report != null)
+{
+    <h3>Отчет о количестве исторических личностей и событий за период</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Период</th>
+                <th>События</th>
+                <th>Личности</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in report)
+            {
+                <tr>
+                    <td>@row.Period.name</td>
+                    <td>@row.EventsCount</td>
+                    <td>@row.PersonsCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<iIdName> periods;
+    private List<HystoryPeriodPersonsEventCount> report;
+    private int selectedPeriodId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        periods = await GetHistoryPeriods();
+       
+        
+            report = await GetReportAsync(selectedPeriodId);
+        
+    }
+
+    private async Task OnPeriodChanged(ChangeEventArgs e)
+    {
+        
+        if (int.TryParse(e.Value.ToString(), out int newPeriodId))
+        {
+            selectedPeriodId = newPeriodId;
+          
+                report = await GetReportAsync(selectedPeriodId);
+            
+            
+        }
+    }
+
+    private async Task<List<iIdName>> GetHistoryPeriods()
+    {
+        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
+            return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+        }
+        return new List<iIdName>();
+    }
+
+    private async Task<List<HystoryPeriodPersonsEventCount>> GetReportAsync(int periodId)
+    {   
+        var response = await Http.GetAsync($"https://localhost:7019/Report/GetHystoryPeriodReport/{periodId}");
+        var json = await response.Content.ReadAsStringAsync();
+        var responce = JsonConvert.DeserializeObject<ReportResponceModel1>(json);
+        return responce.data;
+    }
+}

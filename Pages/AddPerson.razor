@@ -1,0 +1,177 @@
+﻿@page "/AddPerson"
+@using Newtonsoft.Json
+@using System.Text
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить историческую личность</PageTitle>
+
+<h1>Добавить историческую личность</h1>
+
+<EditForm Model="person" OnValidSubmit="SavePerson">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="name">Имя:</label>
+        <InputText id="name" @bind-Value="person.Name" />
+
+        <label for="description">Описание:</label>
+        <InputTextArea id="description" @bind-Value="person.Description"></InputTextArea>
+
+        <label for="dateOfBirth">Дата рождения:</label>
+        <InputDate id="dateOfBirth" @bind-Value="person.DateOfBirth" />
+
+        <label for="dateOfDeath">Дата смерти:</label>
+        <InputDate id="dateOfDeath" @bind-Value="person.DateOfDeath" />
+
+        <label for="timePeriodId">Исторический период:</label>
+        <InputSelect id="timePeriodId" @bind-Value="person.TimePeriodIds">
+            <option value="">Выберите период</option>
+            @foreach (var period in TimePeriods)
+            {
+                <option value="@period.id">@period.name</option>
+            }
+        </InputSelect>
+
+        <h4>Ссылки на дополнительные материалы</h4>
+        <button type="button" @onclick="AddUrl">Добавить ссылку</button>
+        <ul>
+            @foreach (var url in person.Urls)
+            {
+                <li>
+                    <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
+                    <InputText @bind-Value="url.Url" placeholder="URL" />
+                    <button type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
+                </li>
+            }
+        </ul>
+
+        <h4>Регионы</h4>
+        <InputSelect @bind-Value="selectedRegionId" @onchange="OnRegionChange">
+            <option value="">Выберите регион</option>
+            @foreach (var region in availableRegions)
+            {
+                <option value="@region.id">@region.name</option>
+            }
+        </InputSelect>
+        <button type="button" @onclick="AddRegion">Добавить регион</button>
+        <ul>
+            @foreach (var region in person.RegionIds)
+            {
+                <li>
+                    @region.name
+                    <button type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
+                </li>
+            }
+        </ul>
+        
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Назад</button>
+    </div>
+</EditForm>
+
+@code {
+    private PersonRequestModel person = new PersonRequestModel
+    {
+        Urls = new List<Urls>(),
+        RegionIds = new List<iIdName>()
+    };
+    private List<iIdName> TimePeriods = new List<iIdName>();
+    private List<iIdName> availableRegions = new List<iIdName>();
+    private int? selectedRegionId;
+
+    protected override async Task OnInitializedAsync()
+    {  
+        availableRegions = await GetRegions();
+        await LoadTimePeriods();
+    }
+
+    private async Task LoadTimePeriods()
+    {
+        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(body);
+            if (responce != null && responce.data != null)
+            {
+                TimePeriods = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList();
+            }
+            else
+            {
+                TimePeriods = new List<iIdName>();
+            }
+        }
+        else
+        {
+            TimePeriods = new List<iIdName>();
+        }
+    }
+
+    private async Task<List<iIdName>> GetRegions()
+    {
+        var response = await Http.GetAsync("https://localhost:7019/Spr/GetRegions");
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
+            if (responce != null && responce.data != null)
+            {
+                return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+            }
+        }
+        return new List<iIdName>();
+    }
+
+    private void AddUrl()
+    {
+        person.Urls.Add(new Urls());
+    }
+
+    private void RemoveUrl(Urls url)
+    {
+        person.Urls.Remove(url);
+    }
+
+    private void AddRegion()
+    {
+        if (selectedRegionId.HasValue)
+        {
+            var regionToAdd = availableRegions.FirstOrDefault(r => r.id == selectedRegionId);
+            if (regionToAdd != null && !person.RegionIds.Any(r => r.id == regionToAdd.id))
+            {
+                person.RegionIds.Add(regionToAdd);
+            }
+        }
+    }
+
+    private void RemoveRegion(iIdName region)
+    {
+        person.RegionIds.Remove(region);
+    }
+
+    private void OnRegionChange(ChangeEventArgs e)
+    {
+        selectedRegionId = int.TryParse(e.Value.ToString(), out var id) ? id : (int?)null;
+    }
+
+    private async Task SavePerson()
+    {
+
+        person.Regions = person.RegionIds.Select(e => e.id).ToList();
+        var model = JsonConvert.SerializeObject(person);
+        var data = new StringContent(model, Encoding.UTF8, "application/json");
+        var response = await Http.PostAsync("https://localhost:7019/HistoryPersons/create", data);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/HistoryPersons");
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/HistoryPersons");
+    }
+}

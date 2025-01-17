@@ -1,0 +1,380 @@
+﻿@page "/HistoryEvents"
+@using Microsoft.AspNetCore.Authorization
+@using Newtonsoft.Json
+@using System.Text
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>HistoryEvents</PageTitle>
+
+<h1>Исторические события</h1>
+  
+  
+   
+
+<div>
+    <label for="searchText">Поиск:</label>
+    <input type="text" id="searchText" @bind="RequestModel.Filter.TextSearch" placeholder="Введите текст для поиска" />
+    
+        
+    
+    <label for="timePeriod">Исторический период:</label>
+    <select id="timePeriod" @bind="RequestModel.Filter.TimePeriodId">
+
+
+        <option value="">Выберите период</option>
+        @foreach (var period in TimePeriods)
+        {
+            <option value="@period.id">@period.name</option>
+        }
+    </select>
+
+    <label for="eventType">Тип события:</label>
+    <select id="eventType" @bind="RequestModel.Filter.TypeId">
+        <option value="">Выберите тип события</option>
+        @foreach (var type in EventTypes)
+        {
+            <option value="@type.id">@type.name</option>
+        }
+    </select>
+
+    <label for="eventLevel">Значимость события:</label>
+    <select id="eventLevel" @bind="RequestModel.Filter.LevelId">
+        <option value="">Выберите значимость</option>
+        @foreach (var level in EventLevels)
+        {
+            <option value="@level.id">@level.name</option>
+        }
+    </select>
+    <button class="btn btn-primary" @onclick="SearchEvents">Поиск</button>
+    <button class="btn btn-secondary" @onclick="ResetFilters">Сбросить фильтры</button>
+    
+    
+</div>
+
+@if (HystoryEvents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (HystoryEvents.Count == 0)
+{
+    <p><em>К сожалению, по вашему запросу нет данных</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th @onclick="() => SortColumn(1)">Id</th>
+                <th @onclick="() => SortColumn(2)">Название</th>
+                <th @onclick="() => SortColumn(3)">Описание</th>
+                <th @onclick="() => SortColumn(4)">Дата начала</th>
+                <th @onclick="() => SortColumn(5)">Дата завершения</th>
+                <th @onclick="() => SortColumn(6)">Исторический период</th>
+                <th @onclick="() => SortColumn(7)">Тип события</th>
+                <th @onclick="() => SortColumn(8)">Значимость события</th>
+                <th @onclick="() => SortColumn(9)">Автор статьи</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var historyEvent in HystoryEvents)
+            {
+                <tr @onclick="() => SelectEvent((int)historyEvent.Id)" @ondblclick="() => OpenPersonPage((int)historyEvent.Id)" class="@(IsEventtSelected((int)historyEvent.Id) ? "table-primary" : "")">
+                    <td>@historyEvent.Id</td>
+                    <td>@historyEvent.Name</td>
+                    <td>@historyEvent.Description?.Substring(0, 30)</td>
+                    <td>@historyEvent.StartedOn</td>
+                    <td>@historyEvent.EndedOn</td>
+                    <td>@historyEvent.TimePeriod?.name</td>
+                    <td>@historyEvent.Type?.name</td>
+                    <td>@historyEvent.Level?.name</td>
+                    <td>@historyEvent.Author?.LastName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <style>
+        .table-primary {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+
+    <div class="button-group">
+        <button class="btn btn-primary" @onclick="AddEvent">Добавить событие</button>
+        <button class="btn btn-secondary" @onclick="EditEvent">Редактировать событие</button>
+        <button class="btn btn-danger" @onclick="DeleteEvent">Удалить событие</button>
+    </div>
+}
+
+@code {
+    private List<EventResponceModel> HystoryEvents;
+    private List<iIdName> TimePeriods = new List<iIdName>();
+    private List<iIdName> EventTypes = new List<iIdName>();
+    private List<iIdName> EventLevels = new List<iIdName>();
+    
+    private int InListPosition = 0;
+    private int RequestRowCount = 20;
+    public int selectedEventId = 0;
+    private EventsPortionRequest RequestModel = new EventsPortionRequest();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFilterData();
+        RequestModel = new EventsPortionRequest
+        {
+            RequestRowCount = RequestRowCount,
+            InListPosition = InListPosition,
+            OrderBy = "Id",
+            OrderTo = true,
+            Filter = new EventFilter(),
+        };
+
+        await LoadEvents();
+    }
+
+    private async Task LoadFilterData()
+    {
+        // Загрузка данных для фильтров
+        var timePeriodResponse = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        if (timePeriodResponse.IsSuccessStatusCode)
+        {
+            var body = await timePeriodResponse.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(body);
+             
+            TimePeriods = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+        }
+
+        var eventTypeResponse = await Http.GetAsync("https://localhost:7019/Spr/GetEventTypes");
+        if (eventTypeResponse.IsSuccessStatusCode)
+        {
+            var body = await eventTypeResponse.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(body);
+            EventTypes = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+        }
+
+        var eventLevelResponse = await Http.GetAsync("https://localhost:7019/Spr/GetEventLevels");
+        if (eventLevelResponse.IsSuccessStatusCode)
+        {
+            var body = await eventLevelResponse.Content.ReadAsStringAsync();
+            var responce = JsonConvert.DeserializeObject<SprResponceModel>(body);
+            EventLevels = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+        }
+    }
+
+    private async Task SearchEvents()
+    {
+        await LoadEvents();
+    }
+
+    private async Task ResetFilters()
+    {
+        RequestModel.Filter = new EventFilter();
+        await LoadEvents();
+    }
+
+    private void OpenPersonPage(int id)
+    {
+        NavigationManager.NavigateTo($"/HysEvent/{id}");
+    }
+    private async Task AddEvent()
+    {
+        NavigationManager.NavigateTo("/AddEvent"); 
+    }
+
+    private async Task EditEvent()
+    {
+        if (selectedEventId != 0)
+        {
+            NavigationManager.NavigateTo($"/EditEvent/{selectedEventId}"); 
+        }
+    }
+
+    private async Task DeleteEvent()
+    {
+        if (selectedEventId != 0)
+        {
+            var response = await Http.GetAsync($"https://localhost:7019/Event/Delete/{selectedEventId}");
+            if (response.IsSuccessStatusCode)
+            {
+                // Обновите список пользователей после удаления
+                await LoadEvents();
+            }
+        }
+    }
+        private async Task SortColumn(int columnId)
+    {
+        string columnName = "";
+        switch (columnId)
+        {
+           
+                case 1:columnName = "Id";
+                break;
+                case 2:columnName = "Name";
+                break;
+                case 3:columnName = "Description";
+                break;
+                case 4:columnName = "StartDate";
+                break;
+                case 5:columnName = "EndDate";
+                break;
+                case 6:columnName = "Period";
+                break;
+                case 7:columnName = "Type";
+                break;
+                case 8:columnName = "Level";
+                break;
+                case 9:columnName = "Author";
+                break;
+        }
+
+        
+        if (RequestModel.OrderBy == columnName)
+        {
+            RequestModel.OrderTo = !RequestModel.OrderTo; 
+        }
+        else
+        {
+            RequestModel.OrderBy = columnName; // Изменяем столбец сортировки
+            RequestModel.OrderTo = true; // Сбрасываем направление на восходящее
+        }
+
+        await LoadEvents();
+    }
+     private void SelectEvent(int EventId)
+    {
+        selectedEventId = EventId;
+        
+    }
+
+       private bool IsEventtSelected(int EventId)
+    {
+        return selectedEventId  == EventId;
+    }
+
+    public async Task LoadEvents()
+    {
+        var model = JsonConvert.SerializeObject(RequestModel);
+        var data = new StringContent(model, Encoding.UTF8, "application/json");
+        var response = await Http.PostAsync("https://localhost:7019/Event/GetEventsPortion", data);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            var eventResponse = JsonConvert.DeserializeObject<EventMassResponceModel>(body);
+            HystoryEvents = eventResponse.data.Data;
+        }
+        else
+        {
+            // Обработка ошибок
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {response.StatusCode} - {errorMessage}");
+        }   
+    }
+       
+    
+   
+
+
+
+    public class DataModel
+    {
+        public List<EventResponceModel> Data { get; set; }
+        public int RowsCount { get; set; }
+
+    }
+
+     
+public class EventMassResponceModel
+{
+    public DataModel data { get; set; }
+    public string total { get; set; }
+    public string result { get; set; }
+    public string error { get; set; }
+    public string message { get; set; }
+}
+
+    public class iIdName
+    {
+        public int id   { get; set; }
+        public string name  { get; set; }
+
+    }
+
+     public class ShortUserData
+    { 
+    public int Id { get; set; } 
+    public string FirstName { get; set; }
+    public string SecondName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
+
+    } public class EventResponceModel
+    {
+        public int? Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public DateTime? EndedOn { get; set; }
+        public iIdName TimePeriod { get; set; }
+        public iIdName Type { get; set; }
+        public iIdName Level { get; set; }
+        public List<Urls> Urls { get; set; }
+        public List<iIdName> Regions { get; set; }
+        public DateTime EditOn { get; set; }
+        public ShortUserData Author { get; set; }
+        public List<string> Ilustrations { get; set; }
+        public List<EventComment> Comments { get; set; }
+
+
+    }
+       public class Urls
+    { public int? Id { get; set; }
+        public string Url { get; set; }
+        public string Name { get; set; }
+    }
+     public class EventComment {
+    public int ? Id { get; set; }
+    public string Text { get; set; }
+    public string CommentAuthorEmail { get; set; }
+
+    
+    }
+    public class EventsPortionRequest
+    {
+        public int InListPosition { get; set; }
+        public int RequestRowCount { get; set; }
+        public EventFilter Filter { get; set; }
+        public string OrderBy { get; set; }
+        public bool OrderTo { get; set; } 
+
+    }
+
+    public class EventFilter { 
+    
+    public string? TextSearch { get; set; }
+    public int? Id { get; set; }
+    public string? Author { get; set; }
+    public string? Name { get; set; }
+    public int ? LevelId { get; set; }
+    public DateTime? EditOnStart { get; set; }
+    public DateTime? EditOnEnd { get; set; }
+    public int ? TypeId { get; set; }
+    public string? Region { get; set; }
+    public int? TimePeriodId { get; set; }
+    public DateTime ? StartPeriod { get; set; }
+    public DateTime? EndPeriod { get; set; }
+    public string ? Description { get; set; }
+
+        }
+
+                 public class SprResponceModel
+{
+    public Dictionary<int,string> data { get; set; }
+    public string total { get; set; }
+    public string result { get; set; }
+    public string error { get; set; }
+    public string message { get; set; }
+}
+}
