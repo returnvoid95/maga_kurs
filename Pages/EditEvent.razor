@@ -10,98 +10,135 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
-        <label>Название:</label>
-        <InputText @bind-Value="eventToEdit.Name" />
-    </div>
-    <div>
-        <label>Описание:</label>
-        <InputTextArea @bind-Value="eventToEdit.Description" Rows="5" />
-    </div>
-    <div>
-        <label>Дата начала:</label>
-        <InputDate @bind-Value="eventToEdit.StartedOn" />
-    </div>
-    <div>
-        <label>Дата завершения:</label>
-        <InputDate @bind-Value="eventToEdit.EndedOn" />
-    </div>
-    
-      <div>
-        <label>Исторический период:</label>
-        <InputSelect @bind-Value="eventToEdit.TimePeriod.name">
-            <option value="">Выберите исторический период</option>
-            @foreach (var period in timePeriods)
-            {
-                <option value="@period.id">@period.name</option>
-            }
-        </InputSelect>
-    </div>
+    <section class="event-form">
+        <div class="flex-row">
+            <label>Название:</label>
+            <InputText class="form-control" @bind-Value="eventToEdit.Name" />
+        </div>
+        <div class="flex-row">
+            <label>Описание:</label>
+            <InputTextArea class="form-control" @bind-Value="eventToEdit.Description" Rows="5" />
+        </div>
+        <div class="flex-row">
+            <label>Дата начала:</label>
+            <InputDate class="form-control" @bind-Value="eventToEdit.StartedOn" />
+        </div>
+        <div class="flex-row">
+            <label>Дата завершения:</label>
+            <InputDate class="form-control" @bind-Value="eventToEdit.EndedOn" />
+        </div>
 
-    <div>
-        <label>Тип события:</label>
-        <InputSelect @bind-Value="eventToEdit.Type.name">
-            <option value="">Выберите тип события</option>
-            @foreach (var eventType in eventTypes)
-            {
-                <option value="@eventType.id">@eventType.name</option>
-            }
-        </InputSelect>
-    </div>
+        <div class="flex-row">
+            <label>Исторический период:</label>
+            <InputSelect class="form-select" @bind-Value="eventToEdit.TimePeriod.name">
+                <option value="">Выберите исторический период</option>
+                @foreach (var period in timePeriods)
+                {
+                    <option value="@period.id">@period.name</option>
+                }
+            </InputSelect>
+        </div>
 
-    <div>
-        <label>Значимость события:</label>
-        <InputSelect @bind-Value="eventToEdit.Level.id">
-            <option value="">Выберите значимость события</option>
-            @foreach (var level in eventLevels)
-            {
-                <option value="@level.id">@level.name</option>
-            }
-        </InputSelect>
-    </div>
+        <div class="flex-row">
+            <label>Тип события:</label>
+            <InputSelect class="form-select" @bind-Value="eventToEdit.Type.name">
+                <option value="">Выберите тип события</option>
+                @foreach (var eventType in eventTypes)
+                {
+                    <option value="@eventType.id">@eventType.name</option>
+                }
+            </InputSelect>
+        </div>
 
-    <h4>Ссылки на дополнительные материалы</h4>
-    <button type="button" @onclick="AddUrl">Добавить ссылку</button>
-    <ul>
-        @foreach (var url in eventToEdit.Urls)
-        {
-            <li>
-                <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
-                <InputText @bind-Value="url.Url" placeholder="URL" />
-                <button type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
-            </li>
-        }
-    </ul>
+        <div class="flex-row">
+            <label>Значимость события:</label>
+            <InputSelect class="form-select" @bind-Value="eventToEdit.Level.id">
+                <option value="">Выберите значимость события</option>
+                @foreach (var level in eventLevels)
+                {
+                    <option value="@level.id">@level.name</option>
+                }
+            </InputSelect>
+        </div>
 
-   <h4>Регионы</h4>
-    <InputSelect @bind-Value="selectedRegionId" @onchange="OnRegionChange">
-        <option value="">Выберите регион</option>
-        @foreach (var region in availableRegions)
-        {
-            <option value="@region.id">@region.name</option>
-        }
-    </InputSelect>
-    <button type="button" @onclick="AddRegion">Добавить регион</button>
-    <ul>
-        @foreach (var region in eventToEdit.Regions)
-        {
-            <li>
-                @region.name
-                <button type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
-            </li>
-        }
-    </ul>
-    <div>
-    <label>Широта:</label>
-    <InputNumber @bind-Value="eventToEdit.XCoordiname" />
-</div>
-<div>
-    <label>Долгота:</label>
-    <InputNumber @bind-Value="eventToEdit.YCoordiname" />
-</div>
+        <div>
+            <h4>Ссылки на дополнительные материалы</h4>
+            <button type="button" class="btn btn-secondary" @onclick="AddUrl">Добавить ссылку</button>
+            <ul>
+                @foreach (var url in eventToEdit.Urls)
+                {
+                    <li>
+                        <InputText class="form-control" @bind-Value="url.Name" placeholder="Название ссылки" />
+                        <InputText class="form-control" @bind-Value="url.Url" placeholder="URL" />
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveUrl(url)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </div>
 
-    <button type="submit">Сохранить</button>
+        <div>
+            <h4>Регионы</h4>
+            <InputSelect class="form-select" @bind-Value="selectedRegionId" @onchange="OnRegionChange">
+                <option value="">Выберите регион</option>
+                @foreach (var region in availableRegions)
+                {
+                    <option value="@region.id">@region.name</option>
+                }
+            </InputSelect>
+            <button type="button" class="btn btn-secondary" @onclick="AddRegion">Добавить регион</button>
+            <ul>
+                @foreach (var region in eventToEdit.Regions)
+                {
+                    <li>
+                        @region.name
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveRegion(region)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="flex-row">
+            <label>Широта:</label>
+            <InputNumber class="form-control" @bind-Value="eventToEdit.XCoordiname" />
+        </div>
+        <div class="flex-row">
+            <label>Долгота:</label>
+            <InputNumber class="form-control" @bind-Value="eventToEdit.YCoordiname" />
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+    </section>
+
 </EditForm>
+
+<style>
+    .event-form {
+        width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-block-end: 3rem;
+    }
+
+    input[type="date"] {
+        max-width: 150px;
+    }
+
+    .flex-row {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+        .flex-row > :first-child {
+            width: 195px;
+        }
+
+        .flex-row > :last-child {
+            flex: 1;
+        }
+</style>
 
 @code {
     [Parameter] public int Id { get; set; }
@@ -121,7 +158,7 @@
         eventTypes = await GetEventTypes();
         eventLevels = await GetEventLevels();
         availableRegions = await GetRegions();
-        var response = await Http.GetAsync($"https://localhost:7019/Event/Get/{Id}");
+        var response = await Http.GetAsync($"http://213.110.228.252/Event/Get/{Id}");
         var body = await response.Content.ReadAsStringAsync();
         var responseModel = JsonConvert.DeserializeObject<EventMassResponceModel>(body);
         eventToEdit = responseModel.data;
@@ -152,8 +189,8 @@
 
         var json = JsonConvert.SerializeObject(request);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        var response = await Http.PostAsync($"https://localhost:7019/Event/Update", content);
-        
+        var response = await Http.PostAsync($"http://213.110.228.252/Event/Update", content);
+
         if (response.IsSuccessStatusCode)
         {
             NavigationManager.NavigateTo("/HistoryEvents");
@@ -165,47 +202,48 @@
     }
     private async Task<List<iIdName>> GetHistoryPeriods()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
             var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
-            return   responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+            return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList();
         }
         return new List<iIdName>();
     }
 
     private async Task<List<iIdName>> GetEventTypes()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetEventTypes");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetEventTypes");
         if (response.IsSuccessStatusCode)
-        { var json = await response.Content.ReadAsStringAsync();
+        {
+            var json = await response.Content.ReadAsStringAsync();
             var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
-            return   responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+            return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList();
         }
         return new List<iIdName>();
     }
 
     private async Task<List<iIdName>> GetEventLevels()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetEventLevels");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetEventLevels");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
             var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
-            return   responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+            return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList();
         }
         return new List<iIdName>();
     }
 
     private async Task<List<iIdName>> GetRegions()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetRegions");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetRegions");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
             var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
-            return   responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
+            return responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList();
         }
         return new List<iIdName>();
     }
@@ -219,7 +257,7 @@
         eventToEdit.Urls.Remove(url);
     }
 
-     private void AddRegion()
+    private void AddRegion()
     {
         if (selectedRegionId.HasValue)
         {
@@ -241,23 +279,23 @@
         selectedRegionId = int.TryParse(e.Value.ToString(), out var id) ? id : (int?)null;
     }
 
-     public class EventMassResponceModel
-{
-    public EventResponceModel data { get; set; }
-    public string total { get; set; }
-    public string result { get; set; }
-    public string error { get; set; }
-    public string message { get; set; }
-}
+    public class EventMassResponceModel
+    {
+        public EventResponceModel data { get; set; }
+        public string total { get; set; }
+        public string result { get; set; }
+        public string error { get; set; }
+        public string message { get; set; }
+    }
 
     public class iIdName
     {
-        public int id   { get; set; }
-        public string name  { get; set; }
+        public int id { get; set; }
+        public string name { get; set; }
 
     }
 
-      public class EventRequestModel
+    public class EventRequestModel
     {
         public int? Id { get; set; }
         public string Name { get; set; }
@@ -270,21 +308,22 @@
         public List<Urls> Urls { get; set; }
         public List<iIdName> RegionIds { get; set; }
         public List<int> Regions { get; set; }
-          public double? XCoordiname { get; set; }
+        public double? XCoordiname { get; set; }
         public double? YCoordiname { get; set; }
 
 
     }
 
-     public class ShortUserData
-    { 
-    public int Id { get; set; } 
-    public string FirstName { get; set; }
-    public string SecondName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
+    public class ShortUserData
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string SecondName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
 
-    } public class EventResponceModel
+    }
+    public class EventResponceModel
     {
         public int? Id { get; set; }
         public string Name { get; set; }
@@ -300,21 +339,23 @@
         public ShortUserData Author { get; set; }
         public List<string> Ilustrations { get; set; }
         public List<EventComment> Comments { get; set; }
-          public double? XCoordiname { get; set; }
+        public double? XCoordiname { get; set; }
         public double? YCoordiname { get; set; }
 
 
     }
-       public class Urls
-    { public int? Id { get; set; }
+    public class Urls
+    {
+        public int? Id { get; set; }
         public string Url { get; set; }
         public string Name { get; set; }
     }
-     public class EventComment {
-    public int ? Id { get; set; }
-    public string Text { get; set; }
-    public string CommentAuthorEmail { get; set; }
+    public class EventComment
+    {
+        public int? Id { get; set; }
+        public string Text { get; set; }
+        public string CommentAuthorEmail { get; set; }
 
-    
+
     }
 }
