@@ -9,50 +9,77 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
-        <label>Имя:</label>
-        <InputText @bind-Value="newUser.FirstName" />
-    </div>
-    <div>
-        <label>Фамилия:</label>
-        <InputText @bind-Value="newUser.LastName" />
-    </div>
-    <div>
-        <label>Отчество:</label>
-        <InputText @bind-Value="newUser.SecondName" />
-    </div>
-    <div>
-        <label>Логин:</label>
-        <InputText @bind-Value="newUser.Email" />
-    </div>
-    <div>
-        <label>Пол:</label>
-        <InputSelect @bind-Value="newUser.Sex">
-            <option value="true">Мужской</option>
-            <option value="false">Женский</option>
-        </InputSelect>
-    </div>
-    
-    <div>
-        <label>Роли:</label>
-        @foreach (var role in roles)
-        {
-            <div>
-                <InputCheckbox @bind-Value="role.IsSelected" />
-                <label>@role.name</label>
-            </div>
-        }
-    </div>
-    
-    <div>
-        <button type="submit">Добавить пользователя</button>
-    </div>
+    <section class="user-form">
+        <div class="flex-row">
+            <label>Имя</label>
+            <InputText class="form-control" @bind-Value="newUser.FirstName" />
+        </div>
+        <div class="flex-row">
+            <label>Фамилия</label>
+            <InputText class="form-control" @bind-Value="newUser.LastName" />
+        </div>
+        <div class="flex-row">
+            <label>Отчество</label>
+            <InputText class="form-control" @bind-Value="newUser.SecondName" />
+        </div>
+        <div class="flex-row">
+            <label>Логин</label>
+            <InputText class="form-control" @bind-Value="newUser.Email" />
+        </div>
+        <div class="flex-row">
+            <label>Пол</label>
+            <InputSelect class="form-select" @bind-Value="newUser.Sex">
+                <option value="true">Мужской</option>
+                <option value="false">Женский</option>
+            </InputSelect>
+        </div>
+
+        <div>
+            <label>Роли:</label>
+            @foreach (var role in roles)
+            {
+                <div>
+                    <label>
+                        <InputCheckbox class="form-check-inline" @bind-Value="role.IsSelected" />
+                        @role.name
+                    </label>
+                </div>
+            }
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary">Добавить пользователя</button>
+        </div>
+    </section>
 </EditForm>
 
 @if (message != null)
 {
     <p>@message</p>
 }
+
+<style>
+    .user-form {
+        width: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-block-end: 3rem;
+    }
+
+    .flex-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .flex-row >:first-child {
+        flex: 1;
+    }
+
+    .flex-row >:last-child {
+        flex: 3;
+    }
+</style>
 
 @code {
     private UserRequestModel newUser = new UserRequestModel();
@@ -68,7 +95,7 @@
     {
         try
         {
-            var response = await Http.GetAsync("https://localhost:7019/Spr/GetRoles");
+            var response = await Http.GetAsync("http://213.110.228.252/Spr/GetRoles");
 
             if (response.IsSuccessStatusCode)
             {
@@ -108,7 +135,7 @@
             }
             var json = JsonConvert.SerializeObject(newUser);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            var response = await Http.PostAsync("https://localhost:7019/Administration/create", content);
+            var response = await Http.PostAsync("http://213.110.228.252/Administration/create", content);
 
             if (response.IsSuccessStatusCode)
             {
