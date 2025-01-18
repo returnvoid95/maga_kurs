@@ -12,42 +12,50 @@
   
    
 
-<div>
-    <label for="searchText">Поиск:</label>
-    <input type="text" id="searchText" @bind="RequestModel.Filter.TextSearch" placeholder="Введите текст для поиска" />
+<div class="search-form">
+    <section>
+        <label for="searchText">Поиск:</label>
+        <input class="form-control" type="text" id="searchText" @bind="RequestModel.Filter.TextSearch" placeholder="Введите текст для поиска" />
+    </section>
     
         
-    
-    <label for="timePeriod">Исторический период:</label>
-    <select id="timePeriod" @bind="RequestModel.Filter.TimePeriodId">
+    <section>
+        <label for="timePeriod">Исторический период:</label>
+        <select class="form-select" id="timePeriod" @bind="RequestModel.Filter.TimePeriodId">
+            <option value="">Выберите период</option>
+            @foreach (var period in TimePeriods)
+            {
+                <option value="@period.id">@period.name</option>
+            }
+        </select>
+    </section>
 
+    <section>
+        <label for="eventType">Тип события:</label>
+        <select class="form-select" id="eventType" @bind="RequestModel.Filter.TypeId">
+            <option value="">Выберите тип события</option>
+            @foreach (var type in EventTypes)
+            {
+                <option value="@type.id">@type.name</option>
+            }
+        </select>
+    </section>
 
-        <option value="">Выберите период</option>
-        @foreach (var period in TimePeriods)
-        {
-            <option value="@period.id">@period.name</option>
-        }
-    </select>
+    <section>
+        <label for="eventLevel">Значимость события:</label>
+        <select class="form-select" id="eventLevel" @bind="RequestModel.Filter.LevelId">
+            <option value="">Выберите значимость</option>
+            @foreach (var level in EventLevels)
+            {
+                <option value="@level.id">@level.name</option>
+            }
+        </select>
+    </section>
 
-    <label for="eventType">Тип события:</label>
-    <select id="eventType" @bind="RequestModel.Filter.TypeId">
-        <option value="">Выберите тип события</option>
-        @foreach (var type in EventTypes)
-        {
-            <option value="@type.id">@type.name</option>
-        }
-    </select>
-
-    <label for="eventLevel">Значимость события:</label>
-    <select id="eventLevel" @bind="RequestModel.Filter.LevelId">
-        <option value="">Выберите значимость</option>
-        @foreach (var level in EventLevels)
-        {
-            <option value="@level.id">@level.name</option>
-        }
-    </select>
-    <button class="btn btn-primary" @onclick="SearchEvents">Поиск</button>
-    <button class="btn btn-secondary" @onclick="ResetFilters">Сбросить фильтры</button>
+    <section>
+        <button class="btn btn-primary" @onclick="SearchEvents">Поиск</button>
+        <button class="btn btn-secondary" @onclick="ResetFilters">Сбросить фильтры</button>
+    </section>
     
     
 </div>
@@ -62,7 +70,7 @@ else if (HystoryEvents.Count == 0)
 }
 else
 {
-    <table class="table">
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th @onclick="() => SortColumn(1)">Id</th>
@@ -98,6 +106,18 @@ else
         .table-primary {
             background-color: #007bff;
             color: white;
+        }
+
+        h1 {
+            margin-block-end: 2rem;
+        }
+
+        .search-form {
+            width: 700px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            grid-template-rows: 1fr 1fr 1fr;
         }
     </style>
 
@@ -137,7 +157,7 @@ else
     private async Task LoadFilterData()
     {
         // Загрузка данных для фильтров
-        var timePeriodResponse = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var timePeriodResponse = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (timePeriodResponse.IsSuccessStatusCode)
         {
             var body = await timePeriodResponse.Content.ReadAsStringAsync();
@@ -146,7 +166,7 @@ else
             TimePeriods = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
         }
 
-        var eventTypeResponse = await Http.GetAsync("https://localhost:7019/Spr/GetEventTypes");
+        var eventTypeResponse = await Http.GetAsync("http://213.110.228.252/Spr/GetEventTypes");
         if (eventTypeResponse.IsSuccessStatusCode)
         {
             var body = await eventTypeResponse.Content.ReadAsStringAsync();
@@ -154,7 +174,7 @@ else
             EventTypes = responce.data.Select(e => new iIdName { id = e.Key, name = e.Value }).ToList(); 
         }
 
-        var eventLevelResponse = await Http.GetAsync("https://localhost:7019/Spr/GetEventLevels");
+        var eventLevelResponse = await Http.GetAsync("http://213.110.228.252/Spr/GetEventLevels");
         if (eventLevelResponse.IsSuccessStatusCode)
         {
             var body = await eventLevelResponse.Content.ReadAsStringAsync();
@@ -195,7 +215,7 @@ else
     {
         if (selectedEventId != 0)
         {
-            var response = await Http.GetAsync($"https://localhost:7019/Event/Delete/{selectedEventId}");
+            var response = await Http.GetAsync($"http://213.110.228.252/Event/Delete/{selectedEventId}");
             if (response.IsSuccessStatusCode)
             {
                 // Обновите список пользователей после удаления
@@ -257,7 +277,7 @@ else
     {
         var model = JsonConvert.SerializeObject(RequestModel);
         var data = new StringContent(model, Encoding.UTF8, "application/json");
-        var response = await Http.PostAsync("https://localhost:7019/Event/GetEventsPortion", data);
+        var response = await Http.PostAsync("http://213.110.228.252/Event/GetEventsPortion", data);
 
         if (response.IsSuccessStatusCode)
         {
