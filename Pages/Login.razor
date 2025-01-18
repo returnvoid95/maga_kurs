@@ -9,15 +9,34 @@
 <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
-
-    <div>
-        <label>Username:</label>
-        <InputText @bind-Value="loginModel.Username" />
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="username-input">Логин</label>
+        <InputText id="username-input" class="form-control" @bind-Value="loginModel.Username" />
     </div>
-    <div>
-        <label>Password:</label>
-        <InputText @bind-Value="loginModel.Password" type="password" />
+    <div data-mdb-input-init class="form-outline mb-4">
+        <label class="form-label" for="password-input">Пароль</label>
+        <InputText id="password-input"  class="form-control" @bind-Value="loginModel.Password" type="password" />
     </div>
-    <button type="submit">Login</button>
+    <button type="submit" class="btn btn-primary">Войти</button>
 </EditForm>
+
+<style>
+    article.content {
+        display: flex;
+        justify-content: center;
+    }
+
+    form {
+        width: 300px;
+    }
+
+    .form-label {
+        margin-bottom: .2rem;
+    }
+
+    .btn.btn-primary {
+        width: 100%;
+        font-variant: all-small-caps;
+    }
+</style>
 
