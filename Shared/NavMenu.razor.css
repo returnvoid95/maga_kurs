@@ -28,15 +28,6 @@
     padding-inline-start: 5px !important;
 }
 
-.nav-item ::deep a {
-    text-decoration: none;
-    padding-inline-start: 10px;
-    padding-block: 5px;
-    height: auto;
-    padding-block: 5px;
-    height: auto;
-}
-
     .nav-item:first-of-type {
         padding-top: 1rem;
     }
@@ -48,10 +39,14 @@
     .nav-item ::deep a {
         color: #d7d7d7;
         border-radius: 4px;
-        height: 3rem;
+        min-height: 3rem;
+        height: auto;
         display: flex;
         align-items: center;
         line-height: normal;
+        padding-inline-start: 10px;
+        padding-block: 5px;
+        text-decoration: none;
     }
 
 .nav-item ::deep a.active {
