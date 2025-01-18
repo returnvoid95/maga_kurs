@@ -12,64 +12,113 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
-        <label for="name">Имя:</label>
-        <InputText id="name" @bind-Value="person.Name" />
+    <div class="person-form">
+        <div class="flex flex-row">
+            <div class="flex flex-col" style="flex: 1;">
+                <section>
+                    <label for="name">Имя:</label>
+                    <InputText class="form-control" id="name" @bind-Value="person.Name" />
+                </section>
 
-        <label for="description">Описание:</label>
-        <InputTextArea id="description" @bind-Value="person.Description"></InputTextArea>
-
-        <label for="dateOfBirth">Дата рождения:</label>
-        <InputDate id="dateOfBirth" @bind-Value="person.DateOfBirth" />
-
-        <label for="dateOfDeath">Дата смерти:</label>
-        <InputDate id="dateOfDeath" @bind-Value="person.DateOfDeath" />
-
-        <label for="timePeriodId">Исторический период:</label>
-        <InputSelect id="timePeriodId" @bind-Value="person.TimePeriodIds">
-            <option value="">Выберите период</option>
-            @foreach (var period in TimePeriods)
-            {
-                <option value="@period.id">@period.name</option>
-            }
-        </InputSelect>
-
-        <h4>Ссылки на дополнительные материалы</h4>
-        <button type="button" @onclick="AddUrl">Добавить ссылку</button>
-        <ul>
-            @foreach (var url in person.Urls)
-            {
-                <li>
-                    <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
-                    <InputText @bind-Value="url.Url" placeholder="URL" />
-                    <button type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
-                </li>
-            }
-        </ul>
-
-        <h4>Регионы</h4>
-        <InputSelect @bind-Value="selectedRegionId" @onchange="OnRegionChange">
-            <option value="">Выберите регион</option>
-            @foreach (var region in availableRegions)
-            {
-                <option value="@region.id">@region.name</option>
-            }
-        </InputSelect>
-        <button type="button" @onclick="AddRegion">Добавить регион</button>
-        <ul>
-            @foreach (var region in person.RegionIds)
-            {
-                <li>
-                    @region.name
-                    <button type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
-                </li>
-            }
-        </ul>
+                <section>
+                    <label for="description">Описание:</label>
+                    <InputTextArea class="form-control" id="description" @bind-Value="person.Description"></InputTextArea>
+                </section>
+            </div>
         
-        <button type="submit" class="btn btn-primary">Сохранить</button>
-        <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Назад</button>
+            <div class="flex flex-col">
+                <section>
+                    <label for="dateOfBirth">Дата рождения:</label>
+                    <InputDate class="form-control" id="dateOfBirth" @bind-Value="person.DateOfBirth" />
+                </section>
+
+                <section>
+                    <label for="dateOfDeath">Дата смерти:</label>
+                    <InputDate class="form-control" id="dateOfDeath" @bind-Value="person.DateOfDeath" />
+                </section>
+            </div>
+        </div>
+
+        <section>
+            <label for="timePeriodId">Исторический период:</label>
+            <InputSelect class="form-select" id="timePeriodId" @bind-Value="person.TimePeriodIds">
+                <option value="">Выберите период</option>
+                @foreach (var period in TimePeriods)
+                {
+                    <option value="@period.id">@period.name</option>
+                }
+            </InputSelect>
+        </section>
+
+        <section>
+            <h4>Ссылки на дополнительные материалы</h4>
+            <button type="button" class="btn btn-secondary" @onclick="AddUrl">Добавить ссылку</button>
+            <ul>
+                @foreach (var url in person.Urls)
+                {
+                    <li>
+                        <InputText class="form-control" @bind-Value="url.Name" placeholder="Название ссылки" />
+                        <InputText class="form-control" @bind-Value="url.Url" placeholder="URL" />
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveUrl(url)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section>
+            <h4>Регионы</h4>
+            <InputSelect class="form-select" @bind-Value="selectedRegionId" @onchange="OnRegionChange">
+                <option value="">Выберите регион</option>
+                @foreach (var region in availableRegions)
+                {
+                    <option value="@region.id">@region.name</option>
+                }
+            </InputSelect>
+            <button type="button" class="btn btn-secondary" @onclick="AddRegion">Добавить регион</button>
+            <ul>
+                @foreach (var region in person.RegionIds)
+                {
+                    <li>
+                        @region.name
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveRegion(region)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </section>
+        
+        <section>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Назад</button>
+        </section>
     </div>
 </EditForm>
+
+<style>
+    .person-form {
+        width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-block-end: 3rem;
+    }
+
+    input[type="date"] {
+        width: 150px;
+    }
+
+    .flex {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .flex-row {
+        flex-direction: row;
+    }
+
+    .flex-col {
+        flex-direction: column;
+    }
+</style>
 
 @code {
     private PersonRequestModel person = new PersonRequestModel
@@ -89,7 +138,7 @@
 
     private async Task LoadTimePeriods()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync();
@@ -111,7 +160,7 @@
 
     private async Task<List<iIdName>> GetRegions()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetRegions");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetRegions");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -162,7 +211,7 @@
         person.Regions = person.RegionIds.Select(e => e.id).ToList();
         var model = JsonConvert.SerializeObject(person);
         var data = new StringContent(model, Encoding.UTF8, "application/json");
-        var response = await Http.PostAsync("https://localhost:7019/HistoryPersons/create", data);
+        var response = await Http.PostAsync("http://213.110.228.252/HistoryPersons/create", data);
         
         if (response.IsSuccessStatusCode)
         {
