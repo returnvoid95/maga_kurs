@@ -10,97 +10,137 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div>
-        <label>Название:</label>
-        <InputText @bind-Value="newEvent.Name" />
-    </div>
-    <div>
-        <label>Описание:</label>
-        <InputTextArea @bind-Value="newEvent.Description" Rows="5" />
-    </div>
-    <div>
-        <label>Дата начала:</label>
-        <InputDate @bind-Value="newEvent.StartedOn" />
-    </div>
-    <div>
-        <label>Дата завершения:</label>
-        <InputDate @bind-Value="newEvent.EndedOn" />
-    </div>
+    <section class="event-form">
+        <div class="flex-row">
+            <label>Название:</label>
+            <InputText class="form-control" @bind-Value="newEvent.Name" />
+        </div>
+        <div class="flex-row">
+            <label>Описание:</label>
+            <InputTextArea class="form-control" @bind-Value="newEvent.Description" Rows="5" />
+        </div>
+        <div class="flex-row">
+            <label>Дата начала:</label>
+            <div class="date-container">
+                <InputDate class="form-control" @bind-Value="newEvent.StartedOn" />
+            </div>
+        </div>
+        <div class="flex-row">
+            <label>Дата завершения:</label>
+            <div class="date-container">
+                <InputDate class="form-control" @bind-Value="newEvent.EndedOn" />
+            </div>
+        </div>
 
-    <div>
-        <label>Исторический период:</label>
-        <InputSelect @bind-Value="newEvent.TimePeriodIds">
-            <option value="">Выберите исторический период</option>
-            @foreach (var period in timePeriods)
-            {
-                <option value="@period.id">@period.name</option>
-            }
-        </InputSelect>
-    </div>
+        <div class="flex-row">
+            <label>Исторический период:</label>
+            <InputSelect class="form-select" @bind-Value="newEvent.TimePeriodIds">
+                <option value="">Выберите исторический период</option>
+                @foreach (var period in timePeriods)
+                {
+                    <option value="@period.id">@period.name</option>
+                }
+            </InputSelect>
+        </div>
 
-    <div>
-        <label>Тип события:</label>
-        <InputSelect @bind-Value="newEvent.Type">
-            <option value="">Выберите тип события</option>
-            @foreach (var eventType in eventTypes)
-            {
-                <option value="@eventType.id">@eventType.name</option>
-            }
-        </InputSelect>
-    </div>
+        <div class="flex-row">
+            <label>Тип события:</label>
+            <InputSelect class="form-select" @bind-Value="newEvent.Type">
+                <option value="">Выберите тип события</option>
+                @foreach (var eventType in eventTypes)
+                {
+                    <option value="@eventType.id">@eventType.name</option>
+                }
+            </InputSelect>
+        </div>
 
-    <div>
-        <label>Значимость события:</label>
-        <InputSelect @bind-Value="newEvent.Level">
-            <option value="">Выберите значимость события</option>
-            @foreach (var level in eventLevels)
-            {
-                <option value="@level.id">@level.name</option>
-            }
-        </InputSelect>
-    </div>
+        <div class="flex-row">
+            <label>Значимость события:</label>
+            <InputSelect class="form-select" @bind-Value="newEvent.Level">
+                <option value="">Выберите значимость события</option>
+                @foreach (var level in eventLevels)
+                {
+                    <option value="@level.id">@level.name</option>
+                }
+            </InputSelect>
+        </div>
 
-    <h4>Ссылки на дополнительные материалы</h4>
-    <button type="button" @onclick="AddUrl">Добавить ссылку</button>
-    <ul>
-        @foreach (var url in newEvent.Urls)
-        {
-            <li>
-                <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
-                <InputText @bind-Value="url.Url" placeholder="URL" />
-                <button type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
-            </li>
-        }
-    </ul>
+        <section>
+            <h4>Ссылки на дополнительные материалы</h4>
+            <button type="button" class="btn btn-secondary" @onclick="AddUrl">Добавить ссылку</button>
+            <ul>
+                @foreach (var url in newEvent.Urls)
+                {
+                    <li>
+                        <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
+                        <InputText @bind-Value="url.Url" placeholder="URL" />
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveUrl(url)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </section>
 
-    <h4>Регионы</h4>
-    <InputSelect @bind-Value="selectedRegionId" @onchange="OnRegionChange">
-        <option value="">Выберите регион</option>
-        @foreach (var region in availableRegions)
-        {
-            <option value="@region.id">@region.name</option>
-        }
-    </InputSelect>
-    <button type="button" @onclick="AddRegion">Добавить регион</button>
-    <ul>
-        @foreach (var region in newEvent.RegionIds)
-        {
-            <li>
-                @region.name
-                <button type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
-            </li>
-        }
-    </ul>
-    <div>
-    <label>Широта:</label>
-    <InputNumber @bind-Value="newEvent.XCoordiname" />
-</div>
-<div>
-    <label>Долгота:</label>
-    <InputNumber @bind-Value="newEvent.YCoordiname" />
-</div>
-    <button type="submit">Сохранить</button>
+        <section>
+            <h4>Регионы</h4>
+            <InputSelect class="form-select" @bind-Value="selectedRegionId" @onchange="OnRegionChange">
+                <option value="">Выберите регион</option>
+                @foreach (var region in availableRegions)
+                {
+                    <option value="@region.id">@region.name</option>
+                }
+            </InputSelect>
+            <button type="button" class="btn btn-secondary" @onclick="AddRegion">Добавить регион</button>
+            <ul>
+                @foreach (var region in newEvent.RegionIds)
+                {
+                    <li>
+                        @region.name
+                        <button type="button" class="btn btn-danger" @onclick="() => RemoveRegion(region)">Удалить</button>
+                    </li>
+                }
+            </ul>
+        </section>
+        <div class="flex-row">
+            <label>Широта:</label>
+            <InputNumber class="form-control" @bind-Value="newEvent.XCoordiname" />
+        </div>
+        <div class="flex-row">
+            <label>Долгота:</label>
+            <InputNumber class="form-control" @bind-Value="newEvent.YCoordiname" />
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+    </section>
 </EditForm>
+
+<style>
+    .event-form {
+        width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-block-end: 3rem;
+    }
+
+    input[type="date"] {
+        max-width: 150px;
+    }
+
+    .flex-row {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+    }
+
+    .flex-row > :first-child {
+        width: 195px;
+    }
+
+    .flex-row > :last-child {
+        flex: 1;
+    }
+</style>
 
 @code {
     private EventRequestModel newEvent = new EventRequestModel
@@ -125,7 +165,7 @@
 
     private async Task<List<iIdName>> GetHistoryPeriods()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -137,7 +177,7 @@
 
     private async Task<List<iIdName>> GetEventTypes()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetEventTypes");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetEventTypes");
         if (response.IsSuccessStatusCode)
         { var json = await response.Content.ReadAsStringAsync();
             var responce = JsonConvert.DeserializeObject<SprResponceModel>(json);
@@ -148,7 +188,7 @@
 
     private async Task<List<iIdName>> GetEventLevels()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetEventLevels");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetEventLevels");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -160,7 +200,7 @@
 
     private async Task<List<iIdName>> GetRegions()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetRegions");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetRegions");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -176,7 +216,7 @@
         newEvent.Regions = newEvent.RegionIds.Select(e => e.id).ToList();
         var json = JsonConvert.SerializeObject(newEvent);
         var content = new StringContent(json, Encoding.GetEncoding("windows-1251"), "application/json");
-        var response = await Http.PostAsync("https://localhost:7019/Event/create", content);
+        var response = await Http.PostAsync("http://213.110.228.252/Event/create", content);
         
         if (response.IsSuccessStatusCode)
         {
