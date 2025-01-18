@@ -1,5 +1,4 @@
 ﻿ 
-Копировать
 @page "/yandex-map"
 @using Microsoft.JSInterop
 @using Newtonsoft.Json
@@ -7,7 +6,7 @@
 @inject IJSRuntime JSRuntime
 
 <div>
-    <select @onchange="OnPeriodSelected">
+    <select @onchange="OnPeriodSelected" class="form-select" style="width: 400px;">
         <option value="">Выберите исторический период</option>
         @foreach (var period in HistoricalPeriods)
         {
@@ -16,7 +15,7 @@
     </select>
 </div>
 
-<div id="map" style="width: 100%; height: 500px;"></div>
+<div id="map" style="width: 100%; height: 500px; margin-block-start: 1rem;"></div>
 
 @code {
     private List<MapObject> MapObjects = new List<MapObject>();
@@ -86,7 +85,7 @@
     private async Task<List<MapObject>> GetHistoryEventsForMap()
     {
         int Id = selectedPeriodId;
-        var response = await Http.GetAsync($"https://localhost:7019/Event/GetEventsToMap/{Id}");
+        var response = await Http.GetAsync($"http://213.110.228.252/Event/GetEventsToMap/{Id}");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -98,7 +97,7 @@
 
     private async Task<List<IdName>> GetHistoricalPeriods()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
