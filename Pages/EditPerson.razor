@@ -8,61 +8,93 @@
 
 <h1>Редактировать историческую личность</h1>
 
-<div>
-    <label for="name">Имя:</label>
-    <input type="text" id="name" @bind="person.Name" />
+<div class="person-form">
+    <section>
+        <label for="name">Имя:</label>
+        <input class="form-control" type="text" id="name" @bind="person.Name" />
+    </section>
 
-    <label for="description">Описание:</label>
-    <textarea id="description" @bind="person.Description"></textarea>
+    <section>
+        <label for="description">Описание:</label>
+        <textarea class="form-control" id="description" @bind="person.Description"></textarea>
+    </section>
 
-    <label for="dateOfBirth">Дата рождения:</label>
-    <input type="date" id="dateOfBirth" @bind="person.DateOfBirth" />
+    <section>
+        <label for="dateOfBirth">Дата рождения:</label>
+        <input class="form-control" type="date" id="dateOfBirth" @bind="person.DateOfBirth" />
+    </section>
 
-    <label for="dateOfDeath">Дата смерти:</label>
-    <input type="date" id="dateOfDeath" @bind="person.DateOfDeath" />
+    <section>
+        <label for="dateOfDeath">Дата смерти:</label>
+        <input class="form-control" type="date" id="dateOfDeath" @bind="person.DateOfDeath" />
+    </section>
 
-    <label for="timePeriodId">Исторический период:</label>
-    <select id="timePeriodId" @bind="person.TimePeriodName">
-        <option value="">Выберите период</option>
-        @foreach (var period in TimePeriods)
-        {
-            <option value="@period.id">@period.name</option>
-        }
-    </select>
-     <h4>Ссылки на дополнительные материалы</h4>
-    <button type="button" @onclick="AddUrl">Добавить ссылку</button>
-    <ul>
-        @foreach (var url in person.Urls)
-        {
-            <li>
-                <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
-                <InputText @bind-Value="url.Url" placeholder="URL" />
-                <button type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
-            </li>
-        }
-    </ul>
+    <section>
+        <label for="timePeriodId">Исторический период:</label>
+        <select class="form-select" id="timePeriodId" @bind="person.TimePeriodName">
+            <option value="">Выберите период</option>
+            @foreach (var period in TimePeriods)
+            {
+                <option value="@period.id">@period.name</option>
+            }
+        </select>
+    </section>
 
-    <h4>Регионы</h4>
-    <InputSelect @bind-Value="selectedRegionId" @onchange="OnRegionChange">
-        <option value="">Выберите регион</option>
-        @foreach (var region in availableRegions)
-        {
-            <option value="@region.id">@region.name</option>
-        }
-    </InputSelect>
-    <button type="button" @onclick="AddRegion">Добавить регион</button>
-    <ul>
-        @foreach (var region in person.Regions)
-        {
-            <li>
-                @region.name
-                <button type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
-            </li>
-        }
-    </ul>
-    <button class="btn btn-primary" @onclick="UpdatePerson">Обновить</button>
-    <button class="btn btn-secondary" @onclick="NavigateBack">Назад</button>
+    <section>
+        <h4>Ссылки на дополнительные материалы</h4>
+        <button class="btn btn-secondary" type="button" @onclick="AddUrl">Добавить ссылку</button>
+        <ul>
+            @foreach (var url in person.Urls)
+            {
+                <li>
+                    <InputText @bind-Value="url.Name" placeholder="Название ссылки" />
+                    <InputText @bind-Value="url.Url" placeholder="URL" />
+                    <button class="btn btn-danger" type="button" @onclick="() => RemoveUrl(url)">Удалить</button>
+                </li>
+            }
+        </ul>
+    </section>
+    
+    <section>
+        <h4>Регионы</h4>
+        <InputSelect class="form-select" @bind-Value="selectedRegionId" @onchange="OnRegionChange">
+            <option value="">Выберите регион</option>
+            @foreach (var region in availableRegions)
+            {
+                <option value="@region.id">@region.name</option>
+            }
+        </InputSelect>
+        <button class="btn btn-secondary" type="button" @onclick="AddRegion">Добавить регион</button>
+        <ul>
+            @foreach (var region in person.Regions)
+            {
+                <li>
+                    @region.name
+                    <button class="btn btn-danger" type="button" @onclick="() => RemoveRegion(region)">Удалить</button>
+                </li>
+            }
+        </ul>
+    </section>
+    
+    <section>
+        <button class="btn btn-primary" @onclick="UpdatePerson">Обновить</button>
+        <button class="btn btn-secondary" @onclick="NavigateBack">Назад</button>
+    </section>
 </div>
+
+<style>
+    .person-form {
+        width: 500px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding-block-end: 3rem;
+    }
+
+    input[type="date"] {
+        width: 150px;
+    }
+</style>
 
 @code {
     [Parameter]
@@ -84,7 +116,7 @@
 
     private async Task LoadTimePeriods()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetHistoryPeriods");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetHistoryPeriods");
         if (response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync();
@@ -94,7 +126,7 @@
     }
     private async Task<List<iIdName>> GetRegions()
     {
-        var response = await Http.GetAsync("https://localhost:7019/Spr/GetRegions");
+        var response = await Http.GetAsync("http://213.110.228.252/Spr/GetRegions");
         if (response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
@@ -136,7 +168,7 @@
 
     private async Task LoadPerson()
     {
-        var response = await Http.GetAsync($"https://localhost:7019/HistoryPersons/Get/{Id}");
+        var response = await Http.GetAsync($"http://213.110.228.252/HistoryPersons/Get/{Id}");
         if (response.IsSuccessStatusCode)
         {
             var body = await response.Content.ReadAsStringAsync();
@@ -151,7 +183,7 @@
     {
         var model = JsonConvert.SerializeObject(person);
         var data = new StringContent(model, Encoding.UTF8, "application/json");
-        var response = await Http.PutAsync($"https://localhost:7019/HistoryPersons/Update/{Id}", data);
+        var response = await Http.PutAsync($"http://213.110.228.252/HistoryPersons/Update/{Id}", data);
         
         if (response.IsSuccessStatusCode)
         {
